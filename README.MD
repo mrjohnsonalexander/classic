@@ -15,8 +15,8 @@ wsl -d CentOS
 ##### Repositorys
 ```Bash
 mkdir /etc/yum.repos.d
-curl --output /etc/yum.repos.d/Centos-Project.repo https://raw.githubusercontent.com/mrjohnsonalexander/classic/master/Centos-Project.repo
-curl --output /etc/yum.repos.d/Nvidia.repo https://raw.githubusercontent.com/mrjohnsonalexander/classic/master/Nvidia.repo
+curl --output /etc/yum.repos.d/Centos-Project.repo https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/Centos-Project.repo
+curl --output /etc/yum.repos.d/Nvidia.repo https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/Nvidia.repo
 dnf update
 ```
 ##### Cuda 11-8
