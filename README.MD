@@ -1,5 +1,5 @@
 # Introduction
-Enable workloads on Nvidia Geforce RTX 770.
+Enable workloads on Nvidia GPU.
 ## CentOS Stream 9
 ### Distribution 
 #### WSL2
@@ -17,6 +17,8 @@ wsl -d CentOS
 mkdir /etc/yum.repos.d
 curl --output /etc/yum.repos.d/Centos-Project.repo https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/Centos-Project.repo
 curl --output /etc/yum.repos.d/Nvidia.repo https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/Nvidia.repo
+curl --output /etc/yum.repos.d/nvidia-container-toolkit.repo https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo
+curl --output /etc/yum.repos.d/docker-ce.repo https://download.docker.com/linux/centos/docker-ce.repo
 dnf update
 ```
 ##### Cuda 11-8
@@ -35,6 +37,19 @@ git checkout tags/v11.8
 cd Samples/1_Utilities/deviceQuery
 make
 ./deviceQuery
+```
+##### Run Nvidia Containers using systemd on WSL2
+```Bash
+curl --output /etc/wsl.conf https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/wsl.conf
+exit
+wsl --shutdown
+wsl -d CentOS
+dnf install nvidia-container-toolkit
+dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+nvidia-ctk runtime configure --runtime=docker
+systemctl restart docker
+docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
+docker run --rm -it --gpus=all nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda10.2 nbody -gpu -benchmark
 ```
 #### Conda
 ```bash
