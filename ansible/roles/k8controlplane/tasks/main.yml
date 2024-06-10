@@ -1,0 +1,73 @@
+---
+- name: K8 Repo
+  ansible.builtin.copy:
+    src: kubernetes.repo
+    dest: /etc/yum.repos.d/kubernetes.repo
+- name: docker repo
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+- name: Install docker, kubeadm, kubelet, kubectl
+  ansible.builtin.shell:
+    cmd: sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin kubeadm kubelet kubectl
+- name: Turn Swapoff for K8
+  ansible.builtin.shell:
+    cmd: sudo swapoff -a
+- name: Remove swap file for K8
+  ansible.builtin.shell:
+    cmd: sudo rm -f /swapfile
+- name: Network filter setup for K8
+  ansible.builtin.shell:
+    cmd: sudo modprobe br_netfilter
+- name: Network overlay setup for K8
+  ansible.builtin.shell:
+    cmd: sudo modprobe overlay
+- name: Network bridge setup for K8
+  ansible.builtin.copy:
+    src: k8s.conf
+    dest: /etc/sysctl.d/k8s.conf
+  become: yes
+- name: K8 setup contrainerd configuration
+  ansible.builtin.copy:
+    src: config.toml
+    dest: /etc/containerd/config.toml
+  become: yes
+  notify:
+    - Restart containerd
+- name: Start Docker
+  ansible.builtin.shell:
+    cmd: sudo systemctl start docker
+- name: Kubeadm Initialize
+  ansible.builtin.shell:
+    cmd: sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --service-cidr=10.96.0.0/12
+- name: kubectl config directory for K8
+  file:
+    path: "{{ ansible_env.HOME }}/.kube"
+    state: directory
+- name: kubectl configuration for K8
+  ansible.builtin.shell:
+    cmd: sudo cp /etc/kubernetes/admin.conf {{ ansible_env.HOME }}/.kube/config
+- name: kubectl config chown for K8
+  ansible.builtin.shell:
+    cmd: sudo chown $(id -u):$(id -g) {{ ansible_env.HOME }}/.kube/config
+- name: Wait for all control-plane pods become created
+  shell: "kubectl get po --namespace=kube-system --selector tier=control-plane --output=jsonpath='{.items[*].metadata.name}'"
+  register: control_plane_pods_created
+  until: item in control_plane_pods_created.stdout
+  retries: 10
+  delay: 30
+  with_items:
+    - etcd
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+- name: Calico operator definitions for K8
+  ansible.builtin.shell:
+    cmd: sudo kubectl create -f {{ ansible_facts.env['PWD'] }}/roles/k8controlplane/files/tigera-operator.yaml
+- name: Calico custom resources
+  ansible.builtin.shell:
+    cmd: sudo kubectl create -f {{ ansible_facts.env['PWD'] }}/roles/k8controlplane/files/custom-resources.yaml
+- name: wait for pods to come up
+  shell: sudo kubectl get pods -n kube-system -o json
+  register: kubectl_get_pods
+  until: kubectl_get_pods.stdout|from_json|json_query('items[*].status.phase')|unique == ["Running"]

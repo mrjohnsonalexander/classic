@@ -1,7 +1,20 @@
 # Introduction
 Enable workloads on Nvidia GPU.
 ## CentOS Stream 9
-### Distribution 
+### Distribution
+#### ISO
+https://mirrors.centos.org/mirrorlist?path=/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso
+##### K8 API
+```Bash
+git clone https://oauth2:<PAT>@github.com/mrjohnsonalexander/classic.git
+cd classic
+sudo dnf install ansible-core
+ansible-galaxy collection install community.general
+sudo dnf install python-jmespath
+sudo ansible-playbook -i ansible/development ansible/site.yml --connection=local
+sudo kubectl get pods --all-namespaces
+sudo kubeadm token create --print-join-command
+```
 #### WSL2
 ```PowerShell
 git clone https://github.com/CentOS/sig-cloud-instance-images.git
@@ -50,6 +63,25 @@ nvidia-ctk runtime configure --runtime=docker
 systemctl restart docker
 docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
 docker run --rm -it --gpus=all nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda10.2 nbody -gpu -benchmark
+```
+##### Enable WSL to connect to Hyper-VM
+```PowerShell
+Get-NetIPInterface | where {$_.InterfaceAlias -eq 'vEthernet (WSL)' -or $_.InterfaceAlias -eq 'vEthernet (External)'} | Set-NetIPInterface -Forwarding Enabled
+```
+###### Join WSL to Hyper-V K8 API
+```Bash
+cp ./ansible/roles/k8controlplane/files/config.toml /etc/containerd/config.toml
+cat > /etc.yum.repos.d/kubernetes.repo <<EOL
+[kubernetes]
+name=kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.30/rpm/
+enabled=1
+gpgcheck=0
+EOL
+dnf install kubectl kubeadm kubelet
+systemctl restart containerd
+systemctl start docker
+kubeadm join <IP ADDRESS:PORT> --token <TOKEN> --discovery-token-ca-cert-has <HASH>
 ```
 #### Conda
 ```bash

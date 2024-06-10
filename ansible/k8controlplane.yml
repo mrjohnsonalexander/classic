@@ -1,0 +1,3 @@
+- hosts: k8controlplane
+  roles:
+    - k8controlplane
