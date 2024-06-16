@@ -1,0 +1,28 @@
+apiVersion: aps/v1
+kind: Deployment
+metadata:
+  name: cuda
+  namespace: gpu
+  labels:
+    app: cuda
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: cuda
+  template:
+    metadata:
+      name: cuda-pods
+      namespace: gpu
+      labels:
+        app: cuda
+    spec:
+      containers:
+      - name: cuda-containers
+        imagePullPolicy: Always
+        image: localhost:5000/cuda:latest
+        ports:
+        - containerPort: 4000
+        
