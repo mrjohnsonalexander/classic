@@ -41,7 +41,7 @@ dnf install nvidia-container-toolkit
 dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 nvidia-ctk runtime configure --runtime=docker
 systemctl restart docker
-docker buildx build -f Dockerfile -t localhost:5000/cuda .
+docker buildx build -f Dockerfile -t localhost:5000/cuda . --build-arg KAGGLE_USERNAME=<USER NAME> --build-arg KAGGLE_KEY=<KEY>
 docker run --rm -it --gpus=all localhost:5000/cuda
 /usr/libexec/docker/cli-plugins/docker-compose up -d
 docker push localhost:5000/cuda
