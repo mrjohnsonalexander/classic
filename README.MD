@@ -42,7 +42,9 @@ dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-co
 nvidia-ctk runtime configure --runtime=docker
 systemctl restart docker
 docker buildx build -f Dockerfile -t localhost:5000/cuda . --build-arg KAGGLE_USERNAME=<USER NAME> --build-arg KAGGLE_KEY=<KEY>
-docker run --rm -it --gpus=all localhost:5000/cuda
+docker run -d -p 4000:4000 --gpus=all localhost:5000/cuda
+curl localhost:4000/health
+curl localhost:4000/generate
 /usr/libexec/docker/cli-plugins/docker-compose up -d
 docker push localhost:5000/cuda
 ```
@@ -59,3 +61,8 @@ nvidia-smi
 ```Bash
 mv cudnn-linux-x86_64-8.9.7.29_cuda12-archive.tar.xz ../classic/cudnn-linux-x86_64-8.9.7.29_cuda12-archive.tar.xz
 ```
+#### Docker registry
+```Bash
+cp classic/daemon.json /etc/docker/daemon.json
+```
+
