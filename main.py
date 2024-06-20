@@ -13,7 +13,9 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = '3'
 os.environ["KERAS_BACKEND"] = "tensorflow"
 os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "1.00"
 keras.config.set_floatx("float16")
-gemma_lm = keras_nlp.models.GemmaCausalLM.from_preset("/root/.cache/kagglehub/models/keras/gemma/keras/gemma_1.1_instruct_2b_en/3", load_weights=False)
+gemma_lm = keras_nlp.models.GemmaCausalLM.from_preset(
+    "/root/.cache/kagglehub/models/keras/gemma/keras/gemma_1.1_instruct_2b_en/3",
+    load_weights=False)
 
 app = FastAPI()
 
@@ -31,10 +33,11 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-class HealthCheck(BaseModel):
-      """Response model to validate and return when performing a health check."""
 
-      status: str = "OK"
+class HealthCheck(BaseModel):
+    """Response model to validate and return when performing a health check."""
+    status: str = "OK"
+
 
 @app.get(
      "/health",
@@ -44,7 +47,6 @@ class HealthCheck(BaseModel):
      status_code=status.HTTP_200_OK,
      response_model=HealthCheck,
 )
-
 def get_health() -> HealthCheck:
     """
     ## Perform a Health Check
@@ -53,12 +55,13 @@ def get_health() -> HealthCheck:
     """
     return HealthCheck(status="OK")
 
+
 @app.get("/generate")
 async def generate():
-    
     try:
-        generated = gemma_lm.generate("What is the meaning of life?", max_length=30)
-    except:
-        logger.info("Logged generation error")
+        generated = gemma_lm.generate(
+            "What is the meaning of life?", max_length=30)
+    except Exception as e:
+        logger.info(e)
 
     return generated
