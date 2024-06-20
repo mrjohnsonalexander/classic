@@ -17,16 +17,19 @@ RUN python3.11 -m ensurepip
 RUN python3.11 -m pip install pip==24.0
 RUN dnf install procps -y
 RUN python3.11 -m pip install tensorrt==8.6.1.post1 --extra-index-url https://pypi.nvidia.com --no-dependencies
+RUN python3.11 -m pip install tensorrt-libs==8.6.1 --extra-index-url https://pypi.nvidia.com --no-dependencies
+RUN python3.11 -m pip install tensorrt-bindings==8.6.1 --extra-index-url https://pypi.nvidia.com --no-dependencies
 ENV LD_LIBRARY_PATH=/usr/local/lib/python3.11/site-packages/tensorrt_libs:$LD_LIBRARY_PATH
+RUN ln -s /usr/local/lib/python3.11/site-packages/tensorrt_libs/libnvinfer_plugin.so.8 /usr/local/lib/python3.11/site-packages/tensorrt_libs/libnvinfer_plugin.so.8.6.1
+RUN ln -s /usr/local/lib/python3.11/site-packages/tensorrt_libs/libnvinfer.so.8 /usr/local/lib/python3.11/site-packages/tensorrt_libs/libnvinfer.so.8.6.1
 RUN python3.11 -m pip install pip==21.3.1
-RUN python3.11 -m pip install tensorflow[and-cuda]==2.16.1 --no-dependencies
 COPY requirements.txt /usr/share/applications/requirements.txt
 RUN python3.11 -m pip install -r /usr/share/applications/requirements.txt
 ARG KAGGLE_USERNAME
 ARG KAGGLE_KEY
 ENV KAGGLE_USERNAME=$KAGGLE_USERNAME
 ENV KAGGLE_KEY=$KAGGLE_KEY
-RUN python3.11 -m pip install fastapi==0.111.0
+RUN python3.11 -c "import kagglehub; kagglehub.model_download('keras/gemma/keras/gemma_1.1_instruct_2b_en')"
 EXPOSE 4000
 COPY main.py /usr/share/applications/main.py
 CMD ["python3.11", "-m", "uvicorn", "--app-dir", "/usr/share/applications", "main:app", "--reload", "--host", "0.0.0.0", "--port", "4000"]
