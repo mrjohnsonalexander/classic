@@ -65,4 +65,16 @@ mv cudnn-linux-x86_64-8.9.7.29_cuda12-archive.tar.xz ../classic/cudnn-linux-x86_
 ```Bash
 cp classic/daemon.json /etc/docker/daemon.json
 ```
-
+#### Model weights
+```Python
+f = h5py.File("/root/.cache/kagglehub/models/keras/gemma/keras/gemma_1.1_instruct_2b_en/3/model.weights.h5", 'r')
+for i in f['layers']:
+  print(f['layers'][i].name)
+...
+f['layers']['gemma_decoder_block_1']
+...
+for i in range(len(gemma_lm.layers[2].layers)):
+  print(gemma_lm.layers[2].layers[i].name)
+...
+gemma_lm.layers[2].layers[4].get_weights()
+```

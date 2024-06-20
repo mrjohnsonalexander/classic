@@ -4,8 +4,6 @@ import logging
 import tensorflow
 from tensorflow import keras
 import keras_nlp
-import kaggle
-from kaggle.api.kaggle_api_extended import KaggleApi
 import logging
 import os
 from pydantic import BaseModel
