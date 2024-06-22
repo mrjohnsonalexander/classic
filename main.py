@@ -1,5 +1,7 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 import logging
 import tensorflow
 from tensorflow import keras
@@ -18,6 +20,8 @@ gemma_lm = keras_nlp.models.GemmaCausalLM.from_preset(
     load_weights=False)
 
 app = FastAPI()
+
+templates = Jinja2Templates(directory="/usr/share/applications/templates/")
 
 logging.basicConfig(filename='main.log', level=logging.INFO)
 
@@ -57,11 +61,25 @@ def get_health() -> HealthCheck:
 
 
 @app.get("/generate")
-async def generate():
+def generate(question="How to develop a reliable large language model system?"):
     try:
-        generated = gemma_lm.generate(
-            "What is the meaning of life?", max_length=30)
+        generated = gemma_lm.generate(question, max_length=30)
     except Exception as e:
         logger.info(e)
-
     return generated
+
+
+@app.get("/form", response_class=HTMLResponse)
+def form(request: Request):
+    return templates.TemplateResponse(
+        'index.html', context={
+            'request': request,
+            'generated': "Ask a question"})
+
+
+@app.post("/form")
+def form(request: Request, question: str = Form(...)):
+    return templates.TemplateResponse(
+        'index.html', context={
+            'request': request,
+            "generated": generate(question)})

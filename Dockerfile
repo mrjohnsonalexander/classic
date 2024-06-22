@@ -30,6 +30,8 @@ ARG KAGGLE_KEY
 ENV KAGGLE_USERNAME=$KAGGLE_USERNAME
 ENV KAGGLE_KEY=$KAGGLE_KEY
 RUN python3.11 -c "import kagglehub; kagglehub.model_download('keras/gemma/keras/gemma_1.1_instruct_2b_en')"
+RUN python3.11 -m pip install python-multipart
+COPY templates/index.html /usr/share/applications/templates/index.html
 EXPOSE 4000
 COPY main.py /usr/share/applications/main.py
 CMD ["python3.11", "-m", "uvicorn", "--app-dir", "/usr/share/applications", "main:app", "--reload", "--host", "0.0.0.0", "--port", "4000"]

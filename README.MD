@@ -53,6 +53,8 @@ docker push localhost:5000/cuda
 kubectl apply -k kustomize
 ```
 ### Notes
+#### Form
+localhost:4000/form
 #### Drivers
 ```Bash
 nvidia-smi
