@@ -27,21 +27,21 @@ kubectl get pods --all-namespaces
 ##### Repositorys
 ```Bash
 mkdir /etc/yum.repos.d
-curl --output /etc/yum.repos.d/Centos-Project.repo https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/Centos-Project.repo
-curl --output /etc/yum.repos.d/Nvidia.repo https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/Nvidia.repo
+curl --output /etc/yum.repos.d/Centos-Project.repo https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/configs/Centos-Project.repo
+curl --output /etc/yum.repos.d/Nvidia.repo https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/configs/Nvidia.repo
 curl --output /etc/yum.repos.d/nvidia-container-toolkit.repo https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo
 curl --output /etc/yum.repos.d/docker-ce.repo https://download.docker.com/linux/centos/docker-ce.repo
 dnf update
 ```
 ###### Install cuda dependent Tensorflow in Centos Stream 9 container, run using systemd on WSL2, and then push to registry.
 ```Bash
-curl --output /etc/wsl.conf https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/wsl.conf
+curl --output /etc/wsl.conf https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/configs/wsl.conf
 exit
 wsl --shutdown
 wsl -d CentOS
 dnf install nvidia-container-toolkit
 dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-nvidia-ctk runtime configure --runtime=docker
+cp ./classic/configs/config.toml /etc/containerd/config.toml
 systemctl restart docker
 docker buildx build -f Dockerfile -t localhost:5000/cuda . --build-arg KAGGLE_USERNAME=<USER NAME> --build-arg KAGGLE_KEY=<KEY>
 docker run -d -p 4000:4000 --gpus=all localhost:5000/cuda
@@ -64,6 +64,11 @@ nvidia-smi
 #### Docker registry
 ```Bash
 cp classic/daemon.json /etc/docker/daemon.json
+```
+#### CentOS Stream 9 ISO for Hyper VM K8 Api to WSL Kubelet forwarding
+https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-20240617.0-x86_64-boot.iso
+```PowerShell
+ Get-NetIPInterface | where {$_.InterfaceAlias -eq 'vEthernet (WSL)' -or $_.InterfaceAlias -eq 'vEthernet (External)'} | Set-NetIPInterface -Forwarding Enabled -Verbose
 ```
 #### Stack
 Python Version 3.11

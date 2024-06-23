@@ -1,36 +1,10 @@
 # Content of file /etc/containerd/config.toml
 version = 2
-
 [plugins]
-
   [plugins."io.containerd.grpc.v1.cri"]
-
    [plugins."io.containerd.grpc.v1.cri".containerd]
-
       [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
-
-        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia]
-          privileged_without_host_devices = false
-          runtime_engine = ""
-          runtime_root = ""
-          runtime_type = "io.containerd.runc.v2"
-          
-          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia.options]
-            BinaryName = "/usr/bin/nvidia-container-runtime"
-            SystemdCgroup = true
-
         [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
           runtime_type = "io.containerd.runc.v2"
-
           [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
             SystemdCgroup = true
-  
-  [plugins."io.containerd.grpc.v1.cri".registry]
-    
-    [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:5000"]
-      endpoint = ["http://localhost:5000"]
-
-    [plugins."io.containerd.grpc.v1.cri".configs]
-
-      [plugins."io.containerd.grpc.v1.cri".registry.configs."localhost:5000".tls]
-        insecure_skip_verify = true
