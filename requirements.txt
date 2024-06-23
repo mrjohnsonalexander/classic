@@ -1,6 +1,5 @@
-tensorflow==2.16.1
-kaggle==1.6.14
-keras==3.3.3
-keras-nlp==0.12.1
-fastapi==0.111.0
 kagglehub==0.2.5
+accelerate==0.31.0
+transformers[torch]
+fastapi==0.111.0
+python-multipart==0.0.9

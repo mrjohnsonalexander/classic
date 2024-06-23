@@ -14,11 +14,11 @@ wsl -d CentOS
 ```Bash
 git clone https://oauth2:<PAT>@github.com/mrjohnsonalexander/classic.git
 cd classic
-sudo dnf install ansible-core
+dnf install ansible-core
 ansible-galaxy collection install community.general
-sudo dnf install python-jmespath
-sudo ansible-playbook -i ansible/development ansible/site.yml --connection=local
-sudo kubectl get pods --all-namespaces
+dnf install python-jmespath
+ansible-playbook -i ansible/development ansible/site.yml --connection=local
+kubectl get pods --all-namespaces
 ```
 ### Packages
 #### RPM
@@ -59,24 +59,7 @@ localhost:4000/form
 ```Bash
 nvidia-smi
 ```
-#### Cuddn
-```Bash
-mv cudnn-linux-x86_64-8.9.7.29_cuda12-archive.tar.xz ../classic/cudnn-linux-x86_64-8.9.7.29_cuda12-archive.tar.xz
-```
 #### Docker registry
 ```Bash
 cp classic/daemon.json /etc/docker/daemon.json
-```
-#### Model weights
-```Python
-f = h5py.File("/root/.cache/kagglehub/models/keras/gemma/keras/gemma_1.1_instruct_2b_en/3/model.weights.h5", 'r')
-for i in f['layers']:
-  print(f['layers'][i].name)
-...
-f['layers']['gemma_decoder_block_1']
-...
-for i in range(len(gemma_lm.layers[2].layers)):
-  print(gemma_lm.layers[2].layers[i].name)
-...
-gemma_lm.layers[2].layers[4].get_weights()
 ```
