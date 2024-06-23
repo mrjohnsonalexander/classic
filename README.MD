@@ -1,5 +1,7 @@
 # Introduction
-Enable workloads on Nvidia GPU.
+Enable Large Language Model (LLM) solution.
+# Background
+This software builds a LLM system enabled for Nvidia GPU, by running a container on WSL2 Centos distribution, using a Python implementation.
 ## CentOS Stream 9
 ### Distribution
 #### WSL2
@@ -63,3 +65,15 @@ nvidia-smi
 ```Bash
 cp classic/daemon.json /etc/docker/daemon.json
 ```
+#### Stack
+Python Version 3.11
+Docker Community Version 26.1.4
+Kubernetes v1.30
+Containerd  1.6.33
+WSL Distribution Centos Stream9
+WSL version: 2.2.4.0
+OS Version Windows 10 BUILD 19045
+Nvidia Game Ready Driver Version: 555.99 
+Installed Physical Memory (RAM) 32 GB
+Nvidia Geforce RTX 4060 Ti 8 GB VRAM
+Intel CPU i7-4820k
