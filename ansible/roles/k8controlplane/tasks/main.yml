@@ -7,9 +7,39 @@
   ansible.builtin.get_url:
     url: https://download.docker.com/linux/centos/docker-ce.repo
     dest: /etc/yum.repos.d/docker-ce.repo
-- name: Install docker, kubeadm, kubelet, kubectl
+- name: dnf update
   ansible.builtin.shell:
-    cmd: sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin kubeadm kubelet kubectl
+    cmd: sudo dnf update -y
+- name: Set Permissive Enforce
+  ansible.builtin.shell:
+    cmd: sudo setenforce 0
+- name: Set Permissive Config
+  ansible.builtin.shell:
+    cmd: sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+- name: Install docker and containerd
+  ansible.builtin.shell:
+    cmd: sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+- name: open Kubernetes API server port
+  ansible.builtin.shell:
+    cmd: sudo firewall-cmd --zone=public --add-port=6443/tcp --permanent
+- name: open etcd server client API port
+  ansible.builtin.shell:
+    cmd: sudo firewall-cmd --zone=public --add-port=2379-2380/tcp --permanent
+- name: open Kubelet API port
+  ansible.builtin.shell:
+    cmd: sudo firewall-cmd --zone=public --add-port=10250/tcp --permanent
+- name: open kube-scheduler port
+  ansible.builtin.shell:
+    cmd: sudo firewall-cmd --zone=public --add-port=10259/tcp --permanent
+- name: open kube-controller-manager port
+  ansible.builtin.shell:
+    cmd: sudo firewall-cmd --zone=public --add-port=10257/tcp --permanent
+- name: Reload firewall
+  ansible.builtin.shell:
+    cmd: sudo systemctl restart firewalld
+- name: Install kubeadm kubelet and kubectl
+  ansible.builtin.shell:
+    cmd: sudo dnf install kubeadm kubelet kubectl --disableexcludes=kubernetes -y
 - name: Turn Swapoff for K8
   ansible.builtin.shell:
     cmd: sudo swapoff -a

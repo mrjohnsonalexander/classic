@@ -1,0 +1,3 @@
+- hosts: gpuworker
+  roles:
+    - gpuworker

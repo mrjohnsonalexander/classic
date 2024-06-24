@@ -1,0 +1,35 @@
+---
+- name: K8 Repo
+  ansible.builtin.copy:
+    src: kubernetes.repo
+    dest: /etc/yum.repos.d/kubernetes.repo
+- name: docker repo
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+- name: Install docker, kubeadm, kubelet
+  ansible.builtin.shell:
+    cmd: sudo dnf install docker-ce docker-ce-cli containerd.io kubeadm kubelet
+- name: dnf update
+  ansible.builtin.shell:
+    cmd: dnf update -y
+- name: Docker Daemon Config
+  ansible.builtin.copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+  become: yes
+- name: Nvidia Repo
+  ansible.builtin.copy:
+    src: Nvidia.repo
+    dest: /etc/yum.repos.d/Nvidia.repo
+  become: yes
+- name: K8 setup contrainerd configuration
+  ansible.builtin.copy:
+    src: config.toml
+    dest: /etc/containerd/config.toml
+  become: yes
+  notify:
+    - Restart containerd
+- name: Start Docker
+  ansible.builtin.shell:
+    cmd: sudo systemctl start docker

@@ -4,6 +4,17 @@ Enable Large Language Model (LLM) solution.
 This software builds a LLM system enabled for Nvidia GPU, by running a container on WSL2 Centos distribution, using a Python implementation.
 ## CentOS Stream 9
 ### Distribution
+#### Hyper V VM Centos
+Create Gen 2 Hyper VM using [Centos ISO](https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-20240617.0-x86_64-boot.iso) with at least 2 Virtual Cores.
+##### K8 API
+```Bash
+sudo dnf install git-core -y
+git clone git clone https://oauth2:<PAT>@github.com/mrjohnsonalexander/classic.git
+sudo dnf install ansible-core python-jmespath -y
+sudo ansible-galaxy collection install community.general
+sudo ansible-playbook -i ansible/development ansible/site.yml --connection=local
+sudo kubectl get pods --all-namespaces
+```
 #### WSL2
 ```PowerShell
 git clone https://github.com/CentOS/sig-cloud-instance-images.git
@@ -11,16 +22,6 @@ cd sig-cloud-instance-images
 git switch CentOS-Stream-9-x86_64
 wsl --import CentOS .\sig-cloud-instance-images .\sig-cloud-instance-images\docker\centos-stream -9-x86_64.tar.xz
 wsl -d CentOS
-```
-##### K8 API
-```Bash
-git clone https://oauth2:<PAT>@github.com/mrjohnsonalexander/classic.git
-cd classic
-dnf install ansible-core
-ansible-galaxy collection install community.general
-dnf install python-jmespath
-ansible-playbook -i ansible/development ansible/site.yml --connection=local
-kubectl get pods --all-namespaces
 ```
 ### Packages
 #### RPM
@@ -66,19 +67,18 @@ nvidia-smi
 cp classic/daemon.json /etc/docker/daemon.json
 ```
 #### CentOS Stream 9 ISO for Hyper VM K8 Api to WSL Kubelet forwarding
-https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-20240617.0-x86_64-boot.iso
 ```PowerShell
  Get-NetIPInterface | where {$_.InterfaceAlias -eq 'vEthernet (WSL)' -or $_.InterfaceAlias -eq 'vEthernet (External)'} | Set-NetIPInterface -Forwarding Enabled -Verbose
 ```
 #### Stack
-Python Version 3.11
-Docker Community Version 26.1.4
-Kubernetes v1.30
-Containerd  1.6.33
-WSL Distribution Centos Stream9
-WSL version: 2.2.4.0
-OS Version Windows 10 BUILD 19045
-Nvidia Game Ready Driver Version: 555.99 
-Installed Physical Memory (RAM) 32 GB
-Nvidia Geforce RTX 4060 Ti 8 GB VRAM
-Intel CPU i7-4820k
+- Python Version 3.11
+- Docker Community Version 26.1.4
+- Kubernetes v1.30
+- Containerd  1.6.33
+- WSL Distribution Centos Stream9
+- WSL version: 2.2.4.0
+- OS Version Windows 10 BUILD 19045
+- Nvidia Game Ready Driver Version: 555.99 
+- Installed Physical Memory (RAM) 32 GB
+- Nvidia Geforce RTX 4060 Ti 8 GB VRAM
+- Intel CPU i7-4820k
