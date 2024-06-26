@@ -1,6 +1,6 @@
 FROM quay.io/centos/centos:stream9
 
-COPY Nvidia.repo /etc/yum.repos.d/Nvidia.repo
+COPY ./configs/Nvidia.repo /etc/yum.repos.d/Nvidia.repo
 RUN dnf update -y
 RUN dnf install libnccl libnccl-devel libnccl-static -y
 RUN dnf install python3.11 -y

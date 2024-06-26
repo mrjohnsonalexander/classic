@@ -6,7 +6,7 @@ This software builds a LLM system enabled for Nvidia GPU, by running a container
 ### Distribution
 #### Hyper V VM Centos
 Create Gen 2 Hyper VM using [Centos ISO](https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-20240617.0-x86_64-boot.iso) with at least 2 Virtual Cores.
-##### K8 API
+##### Hyper-V VM hosted K8 API
 ```Bash
 sudo dnf install git-core -y
 git clone git clone https://oauth2:<PAT>@github.com/mrjohnsonalexander/classic.git
@@ -15,7 +15,7 @@ sudo ansible-galaxy collection install community.general
 sudo ansible-playbook -i ansible/development ansible/site.yml --connection=local
 sudo kubectl get pods --all-namespaces
 ```
-#### WSL2
+#### WSL2 Centos Distribution
 ```PowerShell
 git clone https://github.com/CentOS/sig-cloud-instance-images.git
 cd sig-cloud-instance-images
@@ -23,52 +23,76 @@ git switch CentOS-Stream-9-x86_64
 wsl --import CentOS .\sig-cloud-instance-images .\sig-cloud-instance-images\docker\centos-stream -9-x86_64.tar.xz
 wsl -d CentOS
 ```
-### Packages
-#### RPM
-##### Repositorys
+##### Configure Systemd and Package repo for WSL CentOS distribution
 ```Bash
 mkdir /etc/yum.repos.d
 curl --output /etc/yum.repos.d/Centos-Project.repo https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/configs/Centos-Project.repo
-curl --output /etc/yum.repos.d/Nvidia.repo https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/configs/Nvidia.repo
-curl --output /etc/yum.repos.d/nvidia-container-toolkit.repo https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo
-curl --output /etc/yum.repos.d/docker-ce.repo https://download.docker.com/linux/centos/docker-ce.repo
-dnf update
-```
-###### Install cuda dependent Tensorflow in Centos Stream 9 container, run using systemd on WSL2, and then push to registry.
-```Bash
-curl --output /etc/wsl.conf https://raw.githubusercontent.com/mrjohnsonalexander/classic/main/configs/wsl.conf
+dnf update -y
+dnf install git-core -y
+git clone  https://github.com/mrjohnsonalexander/classic.git
+cp ./classic/configs/wsl.conf /etc/wsl.conf
 exit
+```
+###### Configure WSL distribution as Nvidia Container host
+```PowerShell
 wsl --shutdown
 wsl -d CentOS
-dnf install nvidia-container-toolkit
-dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-cp ./classic/configs/config.toml /etc/containerd/config.toml
-systemctl restart docker
-docker buildx build -f Dockerfile -t localhost:5000/cuda . --build-arg KAGGLE_USERNAME=<USER NAME> --build-arg KAGGLE_KEY=<KEY>
-docker run -d -p 4000:4000 --gpus=all localhost:5000/cuda
-curl localhost:4000/health
-curl localhost:4000/generate
-/usr/libexec/docker/cli-plugins/docker-compose up -d
-docker push localhost:5000/cuda
 ```
-### Kustomize Apply to K8 cluster
 ```Bash
-kubectl apply -k kustomize
+dnf install ansible-core python-jmespath -y
+ansible-galaxy collection install community.general
+ansible-playbook -i ansible/development ansible/gpuworker.yml --connection=local
+```
+###### Join GPU enabled WSL Kublet to K8 API
+####### Enable network forwarding between HyperV VM and WSL distributions
+```PowerShell
+ Get-NetIPInterface | where {$_.InterfaceAlias -eq 'vEthernet (WSL)' -or $_.InterfaceAlias -eq 'vEthernet (External)'} | Set-NetIPInterface -Forwarding Enabled -Verbose
+```
+####### From Hyper VM Get Join Comand
+```Bash
+sudo kubeadm token create --print-join-command
+```
+####### Join WSL distribution to Hyper V hosted K8 API
+```Bash
+kubeadm join <IP:PORT> --token <TOKEN> --discovery-token-ca-cert-hash <HASH>
+```
+##### Build and run Cuda dependent container on WSL2
+###### Build and push container to registry on Hyper-VM that host K8 API
+``` Bash
+sudo firewall-cmd --zone=public --add-port=5000/tcp --permanent
+sudo systemctl restart firewalld
+sudo /usr/libexec/docker/cli-plugins/docker-compose -f ./classic/configs/docker-compose.yaml up -d
+cd classic
+sudo docker buildx build -f Dockerfile -t localhost:5000/cuda . --progress=plain --build-arg KAGGLE_USERNAME=<USERNAME> --build-arg KAGGLE_KEY=<KEY>
+cp configs/daemon.json /etc/docker/daemon.json
+sudo systemctl restart docker
+sudo docker push localhost:5000/cuda
+```
+###### From WSL enable containerd registery 
+``` Bash
+vi /etc/containerd/config.toml
+...
+  endpoint = ["http://localhost:5000"]
+...
+  endpoint = ["http://<IP ADDRESS>:5000"]
+:wq!
+... 
+systemctl restart containerd
+```
+###### From Hyper VM hosting K8 API apply Kustomize
+```Bash
+sudo kubectl label nodes <NODE NAME> nodetype=gpu
+sudo kubectl apply -k kustomize
+sudo kubectl get pods -n gpu
 ```
 ### Notes
 #### Form
 localhost:4000/form
+localhost:4000/health
+localhost:4000/generate
 #### Drivers
 ```Bash
 nvidia-smi
-```
-#### Docker registry
-```Bash
-cp classic/daemon.json /etc/docker/daemon.json
-```
-#### CentOS Stream 9 ISO for Hyper VM K8 Api to WSL Kubelet forwarding
-```PowerShell
- Get-NetIPInterface | where {$_.InterfaceAlias -eq 'vEthernet (WSL)' -or $_.InterfaceAlias -eq 'vEthernet (External)'} | Set-NetIPInterface -Forwarding Enabled -Verbose
 ```
 #### Stack
 - Python Version 3.11

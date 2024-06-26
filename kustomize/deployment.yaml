@@ -1,4 +1,4 @@
-apiVersion: aps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cuda
@@ -37,3 +37,5 @@ spec:
             port: 4000
           initialDelaySeconds: 30
           periodSeconds: 30
+      nodeSelector:
+        nodetype: gpu
