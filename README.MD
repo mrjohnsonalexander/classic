@@ -84,12 +84,13 @@ systemctl restart containerd
 sudo kubectl label nodes <NODE NAME> nodetype=gpu
 sudo kubectl apply -k kustomize
 sudo kubectl get pods -n gpu
+sudo kubectl get svc -n gpu
 ```
 ### Notes
 #### Form
-localhost:4000/form
-localhost:4000/health
-localhost:4000/generate
+- <WSL IP ADDR>:4000/form
+- <WSL IP ADDR>:4000/health
+- <WSL IP ADDR>:4000/generate
 #### Drivers
 ```Bash
 nvidia-smi
