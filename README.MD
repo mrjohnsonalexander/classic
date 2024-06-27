@@ -1,7 +1,7 @@
 # Introduction
 Enable Large Language Model (LLM) solution.
 # Background
-This software builds a LLM system enabled for Nvidia GPU, by running a container on WSL2 Centos distribution, using a Python implementation.
+This software builds a LLM system enabled for Nvidia GPU, by running a container on WSL2 Centos distribution, using a Python implementation. Running using Docker is working. Deploying built container to K8 kubelet on WSL2 is working, however haven't reproduced [device plugin](https://github.com/NVIDIA/k8s-device-plugin/issues/332) enabling kubelet managed container on WSL2 to use GPU device; so submitting form and invoking generate with managed by kublet is not working yet.
 ## CentOS Stream 9
 ### Distribution
 #### Hyper V VM Centos

@@ -10,6 +10,12 @@
   ansible.builtin.get_url:
     url: https://download.docker.com/linux/centos/docker-ce.repo
     dest: /etc/yum.repos.d/docker-ce.repo
+- name: Set Permissive Enforce
+  ansible.builtin.shell:
+    cmd: setenforce 0
+- name: Set Permissive Config
+  ansible.builtin.shell:
+    cmd: sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 - name: dnf update
   ansible.builtin.shell:
     cmd: dnf update -y
