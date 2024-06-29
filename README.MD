@@ -107,6 +107,7 @@ nvidia-smi
 #### Stack
 - Python Version 3.11
 - Docker Community Version 26.1.4
+- Nvidia Device Plugin v0.15.0-rc.1
 - Kubernetes v1.30
 - Containerd  1.6.33
 - WSL Distribution Centos Stream9
