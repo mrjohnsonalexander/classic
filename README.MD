@@ -1,7 +1,7 @@
 # Introduction
 Enable Large Language Model (LLM) solution.
 # Background
-This software builds a LLM system enabled for Nvidia GPU, by running a container on WSL2 Centos distribution, using a Python implementation. Running using Docker is working. Deploying built container to K8 kubelet on WSL2 is working, however haven't reproduced [device plugin](https://github.com/NVIDIA/k8s-device-plugin/issues/332) enabling kubelet managed container on WSL2 to use GPU device; so submitting form and invoking generate with managed by kublet is not working yet.
+This software builds a LLM system enabled for Nvidia GPU, by running a container on WSL2 Centos distribution, using a Python implementation; can run in Kubernetes or Docker.
 ## CentOS Stream 9
 ### Distribution
 #### Hyper V VM Centos
@@ -20,7 +20,7 @@ sudo kubectl get pods --all-namespaces
 git clone https://github.com/CentOS/sig-cloud-instance-images.git
 cd sig-cloud-instance-images
 git switch CentOS-Stream-9-x86_64
-wsl --import CentOS .\sig-cloud-instance-images .\sig-cloud-instance-images\docker\centos-stream -9-x86_64.tar.xz
+wsl --import CentOS .\sig-cloud-instance-images .\sig-cloud-instance-images\docker\centos-stream-9-x86_64.tar.xz
 wsl -d CentOS
 ```
 ##### Configure Systemd and Package repo for WSL CentOS distribution
@@ -79,7 +79,16 @@ vi /etc/containerd/config.toml
 ... 
 systemctl restart containerd
 ```
-###### From Hyper VM hosting K8 API apply Kustomize
+###### From VM hosting K8 API deploy nvidia-device-plugin
+``` Bash
+kubectl apply -f configs/nvidia-class.yaml
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+/get_helm.sh
+helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
+helm upgrade -i nvdp nvdp/nvidia-device-plugin --namespace nvdp --create-namespace --set=runtimeClassName=nvidia --version 0.15.0-rc.1 --set gfd.enabled=true
+```
+###### From VM hosting K8 API apply Kustomize
 ```Bash
 sudo kubectl label nodes <NODE NAME> nodetype=gpu
 sudo kubectl apply -k kustomize

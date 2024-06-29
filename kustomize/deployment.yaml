@@ -19,10 +19,14 @@ spec:
       labels:
         app: cuda
     spec:
+      runtimeClassName: nvidia
       containers:
       - name: cuda-containers
         imagePullPolicy: Always
         image: localhost:5000/cuda:latest
+        resources:
+          limits:
+            nvidia.com/gpu: 1 # requesting 1 GPU
         ports:
         - containerPort: 4000
         livenessProbe:

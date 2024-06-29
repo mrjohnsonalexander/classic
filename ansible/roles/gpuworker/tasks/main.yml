@@ -10,12 +10,6 @@
   ansible.builtin.get_url:
     url: https://download.docker.com/linux/centos/docker-ce.repo
     dest: /etc/yum.repos.d/docker-ce.repo
-- name: Set Permissive Enforce
-  ansible.builtin.shell:
-    cmd: setenforce 0
-- name: Set Permissive Config
-  ansible.builtin.shell:
-    cmd: sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 - name: dnf update
   ansible.builtin.shell:
     cmd: dnf update -y
@@ -40,9 +34,23 @@
 - name: Remove swap file for K8
   ansible.builtin.shell:
     cmd: rm -f /swapfile
-- name: Install kubeadm kubelet
+- name: Network filter setup for K8
   ansible.builtin.shell:
-    cmd: dnf install kubeadm kubelet --disableexcludes=kubernetes -y
+    cmd: sudo modprobe br_netfilter
+- name: Install procps
+  ansible.builtin.shell:
+    cmd: dnf install procps -y
+- name: Network overlay setup for K8
+  ansible.builtin.shell:
+    cmd: sudo modprobe overlay
+- name: Network bridge setup for K8
+  ansible.builtin.copy:
+    src: k8s.conf
+    dest: /etc/sysctl.d/k8s.conf
+  become: yes
+- name: Install kubeadm kubelet kubectl
+  ansible.builtin.shell:
+    cmd: dnf install kubeadm kubelet kubectl --disableexcludes=kubernetes -y
 - name: Start Docker
   ansible.builtin.shell:
     cmd: systemctl start docker
@@ -51,4 +59,4 @@
     cmd: systemctl enable kubelet.service
 - name: Install iputils
   ansible.builtin.shell:
-    cmd: dnf install iputils
+    cmd: dnf install iputils -y

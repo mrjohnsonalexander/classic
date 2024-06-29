@@ -5,6 +5,6 @@
             "args": []
         }
     },
-    "insecure-registeries": ["localhost:5000"],
+    "insecure-registries": ["localhost:5000"],
     "default-runtime": "nvidia"
 }
